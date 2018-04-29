@@ -4,8 +4,15 @@
  * @param {Object|Array} states # Object's item can be a function which accept state and getters for param, you can do something for state and getters in it.
  * @param {Object}
  */
+
+/**
+ * mapState通过扩展运算符将store.state.orderList 映射this.orderList
+ * 同理，mapActions, mapMutations都是一样的道理
+ */
+
 export const mapState = normalizeNamespace((namespace, states) => {
   const res = {}
+  // 把要取的内容序列化成指定的格式 然后遍历执行回调 并赋值给res[key]
   normalizeMap(states).forEach(({ key, val }) => {
     res[key] = function mappedState () {
       let state = this.$store.state
@@ -122,6 +129,8 @@ export const createNamespacedHelpers = (namespace) => ({
 })
 
 /**
+ * 把内容序列化成一个Map的形式 返回一个数组 方便调用 传入参数只能是数组或者对象
+ * 序列化成 {key:keyName,val:value}的形式在数组中 这样使用filter forEach every any等方法的时候就方便了
  * Normalize the map
  * normalizeMap([1, 2, 3]) => [ { key: 1, val: 1 }, { key: 2, val: 2 }, { key: 3, val: 3 } ]
  * normalizeMap({a: 1, b: 2, c: 3}) => [ { key: 'a', val: 1 }, { key: 'b', val: 2 }, { key: 'c', val: 3 } ]
@@ -129,6 +138,8 @@ export const createNamespacedHelpers = (namespace) => ({
  * @return {Object}
  */
 function normalizeMap (map) {
+  // 如果是数组 那就用map方法直接转换
+  // 不是数组 就是对象 使用Object.keys()方法将其属性名整合成一个数组 在利用数组的map方法进行转换
   return Array.isArray(map)
     ? map.map(key => ({ key, val: key }))
     : Object.keys(map).map(key => ({ key, val: map[key] }))
