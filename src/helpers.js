@@ -146,18 +146,23 @@ function normalizeMap (map) {
 }
 
 /**
+ * 这是一个函数式编程的经典实例 首先传入回调 并返回一个函数
+ * 返回的函数我们可以存在一个新的变量中 然后执行 以后就只能传入namespace与map就可以了 fn已经常驻内存
  * Return a function expect two param contains namespace and map. it will normalize the namespace and then the param's function will handle the new namespace and the map.
  * @param {Function} fn
  * @return {Function}
  */
 function normalizeNamespace (fn) {
   return (namespace, map) => {
+    // 这是调节参数 是用于处理没有传入namespace的情况的
     if (typeof namespace !== 'string') {
       map = namespace
       namespace = ''
     } else if (namespace.charAt(namespace.length - 1) !== '/') {
+      // 如果namespace最后一位不是'/' 那么为了处理方便 添上'/'
       namespace += '/'
     }
+    // 返回执行回调的结果 注：这里调用normalizeNamespace返回的值才返回的 此时fn已经常驻在内存中了
     return fn(namespace, map)
   }
 }
