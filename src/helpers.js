@@ -112,6 +112,9 @@ export const mapGetters = normalizeNamespace((namespace, getters) => {
 })
 
 /**
+ * mapActions方法 和 mapMutations很像 区别是执行的是 commit dispatch而已
+ * 和mapmutations的主要区别是它可以执行异步方法
+ * 其实mapMutations也可以执行异步方法 但是它为了更好地实现编程思想造成的
  * Reduce the code which written in Vue.js for dispatch the action
  * @param {String} [namespace] - Module's namespace
  * @param {Object|Array} actions # Object's item can be a function which accept `dispatch` function as the first param, it can accept anthor params. You can dispatch action and do any other things in this function. specially, You need to pass anthor params from the mapped function.
