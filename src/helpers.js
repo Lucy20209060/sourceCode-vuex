@@ -168,6 +168,7 @@ function normalizeNamespace (fn) {
 }
 
 /**
+ * 拿到模块名对应的模块
  * Search a special module from store by namespace. if module not exist, print error message.
  * @param {Object} store
  * @param {String} helper
@@ -175,7 +176,9 @@ function normalizeNamespace (fn) {
  * @return {Object}
  */
 function getModuleByNamespace (store, helper, namespace) {
+  // 从store的map中找到对应的模块存储在module中 如果有内容就是一个对象 如果没有内容 那么则是 undefined
   const module = store._modulesNamespaceMap[namespace]
+  // 生产环境下不报错 如果是开发环境 且module不存在 那么报错
   if (process.env.NODE_ENV !== 'production' && !module) {
     console.error(`[vuex] module namespace not found in ${helper}(): ${namespace}`)
   }
