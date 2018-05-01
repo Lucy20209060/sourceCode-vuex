@@ -142,6 +142,8 @@ export const mapActions = normalizeNamespace((namespace, actions) => {
 })
 
 /**
+ * createNamespacedHelpers创建基于命名空间的组件绑定辅助函数
+ * 用于快速为命名空间生成mapState mapGetters mapMutations mapActions等属性
  * Rebinding namespace param for mapXXX function in special scoped, and return them by simple object
  * @param {String} namespace
  * @return {Object}
