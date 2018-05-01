@@ -53,10 +53,13 @@ export const mapState = normalizeNamespace((namespace, states) => {
  */
 export const mapMutations = normalizeNamespace((namespace, mutations) => {
   const res = {}
+  // 序列化好参数 将其转化为指定格式然后 forEach 遍历
   normalizeMap(mutations).forEach(({ key, val }) => {
     res[key] = function mappedMutation (...args) {
       // Get the commit method from store
+      // 从根目录的$store上拿到commit存储到commit上
       let commit = this.$store.commit
+      // 处理命名空间的情况 如果存在命名空间 则调用参数
       if (namespace) {
         const module = getModuleByNamespace(this.$store, 'mapMutations', namespace)
         if (!module) {
@@ -64,6 +67,9 @@ export const mapMutations = normalizeNamespace((namespace, mutations) => {
         }
         commit = module.context.commit
       }
+      // 如果传入的val是一个函数 那么执行这个函数 并返回结果
+      // 否则就执行commit
+      // 这里使用的是apply是因为apply最合适处理传入不确定数量的参数的情况
       return typeof val === 'function'
         ? val.apply(this, [commit].concat(args))
         : commit.apply(this.$store, [val].concat(args))
