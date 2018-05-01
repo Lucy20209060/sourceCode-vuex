@@ -17,7 +17,13 @@ export const mapState = normalizeNamespace((namespace, states) => {
     res[key] = function mappedState () {
       let state = this.$store.state
       let getters = this.$store.getters
+      // 如果是存在命名空间 那就表示使用了模块 在模块内找内容 否则在全局$store中查找内容
       if (namespace) {
+        /**
+         * 根据模块名称在顶层的$store中找到模块的内容
+         * 如果不存在就直接返回
+         * 如果存在取出模块的state getters存储在变量state getters中
+         */
         const module = getModuleByNamespace(this.$store, 'mapState', namespace)
         if (!module) {
           return
@@ -25,13 +31,17 @@ export const mapState = normalizeNamespace((namespace, states) => {
         state = module.context.state
         getters = module.context.getters
       }
+      // 如果要取得的是getters中的内容 那就表示它调用的是一个函数 直接函数并返回结果 
+      // 否则就是取state中的内容 直接返回内容
       return typeof val === 'function'
         ? val.call(this, state, getters)
         : state[val]
     }
+    // 标记在devtools中的vuex key 将其flag调用为true
     // mark vuex getter for devtools
     res[key].vuex = true
   })
+  // 返回res的内容 因为res是引用类型 虽然申明的时候使用了const 但是还是可以为其添加内容的 毕竟我们没有改它的对象地址
   return res
 })
 
