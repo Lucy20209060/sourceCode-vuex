@@ -53,7 +53,7 @@ export const mapState = normalizeNamespace((namespace, states) => {
  */
 export const mapMutations = normalizeNamespace((namespace, mutations) => {
   const res = {}
-  // 序列化好参数 将其转化为指定格式然后 forEach 遍历
+  // 序列化好参数 将其转化为指定格式 然后 forEach 遍历
   normalizeMap(mutations).forEach(({ key, val }) => {
     res[key] = function mappedMutation (...args) {
       // Get the commit method from store
@@ -86,20 +86,26 @@ export const mapMutations = normalizeNamespace((namespace, mutations) => {
  */
 export const mapGetters = normalizeNamespace((namespace, getters) => {
   const res = {}
+  // 序列化好参数 将其转化为指定格式 然后 forEach 遍历
   normalizeMap(getters).forEach(({ key, val }) => {
     // thie namespace has been mutate by normalizeNamespace
+    // 如果命名空间存在 那么会自动加上 如果没有 会加上 '' 这样其实没有改变
     val = namespace + val
     res[key] = function mappedGetter () {
+      // 如果命名空间存在 但是没有找到 这个时候就直接返回一个undefined
       if (namespace && !getModuleByNamespace(this.$store, 'mapGetters', namespace)) {
         return
       }
+      // 如果不是线上环境 且val并不在$store的列表中 那么就报错
       if (process.env.NODE_ENV !== 'production' && !(val in this.$store.getters)) {
         console.error(`[vuex] unknown getter: ${val}`)
         return
       }
+      // 错误情况全部排除了 这个时候就可以返回指定的getters的计算内容了
       return this.$store.getters[val]
     }
     // mark vuex getter for devtools
+    // 标记在devtools中的vuex key 将其flag调为true
     res[key].vuex = true
   })
   return res
