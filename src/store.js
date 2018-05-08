@@ -1,3 +1,6 @@
+/**
+ * vuex核心代码
+ */
 import applyMixin from './mixin'
 import devtoolPlugin from './plugins/devtool'
 import ModuleCollection from './module/module-collection'
@@ -6,14 +9,17 @@ import { forEachValue, isObject, isPromise, assert } from './util'
 let Vue // bind on install
 
 export class Store {
+  // 构造函数 默认传入{}
   constructor (options = {}) {
     // Auto install if it is not done yet and `window` has `Vue`.
     // To allow users to avoid auto-installation in some cases,
-    // this code should be placed here. See #731
+    // this code should be placed here. See #731 
+    // 如果当前环境是浏览器环境 且没有安装vuex 那么就会自动安装
     if (!Vue && typeof window !== 'undefined' && window.Vue) {
       install(window.Vue)
     }
 
+    // 如果是开发环境 那么进行断言检测 以保证程序的稳定
     if (process.env.NODE_ENV !== 'production') {
       assert(Vue, `must call Vue.use(Vuex) before creating a store instance.`)
       assert(typeof Promise !== 'undefined', `vuex requires a Promise polyfill in this browser.`)
@@ -26,17 +32,29 @@ export class Store {
     } = options
 
     // store internal state
+    // 初始化数据
+
+    //是否在进行提交状态的标志
     this._committing = false
+    // actions操作对象
     this._actions = Object.create(null)
+    // action订阅列表
     this._actionSubscribers = []
+    // mutations操作对象
     this._mutations = Object.create(null)
+    // 封装后的getters集合对象
     this._wrappedGetters = Object.create(null)
+    // vuex支持store分模块传入 存储分析后的modules
     this._modules = new ModuleCollection(options)
+    // 模块命名空间map
     this._modulesNamespaceMap = Object.create(null)
+    // 订阅函数集合
     this._subscribers = []
+    // vue组件用于watch监视变化
     this._watcherVM = new Vue()
 
     // bind commit and dispatch to self
+    // 替换this中的dispatch commit 方法 将this指向store
     const store = this
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
