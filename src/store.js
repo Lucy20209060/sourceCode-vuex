@@ -56,6 +56,9 @@ export class Store {
     // bind commit and dispatch to self
     // 替换this中的dispatch commit 方法 将this指向store
     const store = this
+    // 也可以这么写
+    // this.dispatch = dispatch.bind(store)
+    // this.commit = commit.bind(store) 
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
       return dispatch.call(store, type, payload)
@@ -65,32 +68,40 @@ export class Store {
     }
 
     // strict mode
+    // 是否使用严格模式
     this.strict = strict
 
+    // 数据树
     const state = this._modules.root.state
 
     // init root module.
     // this also recursively registers all sub-modules
     // and collects all module getters inside this._wrappedGetters
+    // 加载安装模板
     installModule(this, state, [], this._modules.root)
 
     // initialize the store vm, which is responsible for the reactivity
     // (also registers _wrappedGetters as computed properties)
+    // 重置虚拟 store
     resetStoreVM(this, state)
 
     // apply plugins
+    // 如果使用了plugins 循环载入
     plugins.forEach(plugin => plugin(this))
 
+    // 如果当前环境安装了开发者工具 那么使用开发者工具
     if (Vue.config.devtools) {
       devtoolPlugin(this)
     }
   }
 
+  // 获取store 是从虚拟 state 上获取的 为了区别 所以使用的是 $$state
   get state () {
     return this._vm._data.$$state
   }
 
   set state (v) {
+    // 如果是开发环境 那么进行断言检测 以保证程序的稳定
     if (process.env.NODE_ENV !== 'production') {
       assert(false, `use store.replaceState() to explicit replace store state.`)
     }
@@ -98,6 +109,7 @@ export class Store {
 
   commit (_type, _payload, _options) {
     // check object-style commit
+    // 先统计一下参数 方便后续处理
     const {
       type,
       payload,
@@ -106,19 +118,23 @@ export class Store {
 
     const mutation = { type, payload }
     const entry = this._mutations[type]
+    // 如果在 mutations 列表中不存在当前指定的方法 那么表示传入方法错误 直接返回 开发环境会报错
     if (!entry) {
       if (process.env.NODE_ENV !== 'production') {
         console.error(`[vuex] unknown mutation type: ${type}`)
       }
       return
     }
+    // 专用修改 state 的方法
     this._withCommit(() => {
       entry.forEach(function commitIterator (handler) {
         handler(payload)
       })
     })
+    // 遍历执行订阅者函数 并传入当前设置以执行指定的订阅者
     this._subscribers.forEach(sub => sub(mutation, this.state))
-
+    
+    // 如果开发环境 那么当 options 与 options.silent 都存在的情况下 进行报警
     if (
       process.env.NODE_ENV !== 'production' &&
       options && options.silent
