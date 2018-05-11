@@ -148,6 +148,7 @@ export class Store {
 
   dispatch (_type, _payload) {
     // check object-style dispatch
+    // 先统一下参数 方便后续处理
     const {
       type,
       payload
@@ -155,29 +156,33 @@ export class Store {
 
     const action = { type, payload }
     const entry = this._actions[type]
+    // 如果在action列表中不存在当前指定的方法 那么表示传入方法错误 直接返回 开发环境报错
     if (!entry) {
       if (process.env.NODE_ENV !== 'production') {
         console.error(`[vuex] unknown action type: ${type}`)
       }
       return
     }
-
+    // 遍历执行订阅者函数 并传入当前设置以执行指定的订阅者
     this._actionSubscribers.forEach(sub => sub(action, this.state))
-
+    // 如果有多个 entry 那么 使用 Promise.all() 来执行 并返回结果
+    // 如果只有一个 entry 那么就执行第一个就可以了
     return entry.length > 1
       ? Promise.all(entry.map(handler => handler(payload)))
       : entry[0](payload)
   }
-
+  // 将函数加入到订阅列表中
   subscribe (fn) {
     return genericSubscribe(fn, this._subscribers)
   }
 
+  // action的订阅
   subscribeAction (fn) {
     return genericSubscribe(fn, this._actionSubscribers)
   }
-
+  // 监听数据
   watch (getter, cb, options) {
+    // 如果是开发环境 那么断言检测一下 以保证程序的稳定
     if (process.env.NODE_ENV !== 'production') {
       assert(typeof getter === 'function', `store.watch only accepts a function.`)
     }
