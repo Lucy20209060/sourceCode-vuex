@@ -188,14 +188,17 @@ export class Store {
     }
     return this._watcherVM.$watch(() => getter(this.state, this.getters), cb, options)
   }
-
+  // 修改 state
   replaceState (state) {
+    // 唯一合法修改 state 的方式
     this._withCommit(() => {
       this._vm._data.$$state = state
     })
   }
 
+  // 注册模块
   registerModule (path, rawModule, options = {}) {
+    // 进行参数处理
     if (typeof path === 'string') path = [path]
 
     if (process.env.NODE_ENV !== 'production') {
