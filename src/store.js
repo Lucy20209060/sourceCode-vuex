@@ -245,7 +245,7 @@ export class Store {
     this._committing = committing
   }
 }
-
+// 通用订阅，返回一个函数，这个函数是用于从 subs 中删除插入的 fn 的
 function genericSubscribe (fn, subs) {
   if (subs.indexOf(fn) < 0) {
     subs.push(fn)
@@ -257,16 +257,19 @@ function genericSubscribe (fn, subs) {
     }
   }
 }
-
+// 重置 store
 function resetStore (store, hot) {
+  // 先将几个重要的对象清空
   store._actions = Object.create(null)
   store._mutations = Object.create(null)
   store._wrappedGetters = Object.create(null)
   store._modulesNamespaceMap = Object.create(null)
   const state = store.state
   // init all modules
+  // 调用 installModule 重新安装模块
   installModule(store, state, [], store._modules.root, true)
   // reset vm
+  // 调用 resetStoreVM 重围 VM
   resetStoreVM(store, state, hot)
 }
 
