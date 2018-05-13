@@ -200,38 +200,44 @@ export class Store {
   registerModule (path, rawModule, options = {}) {
     // 进行参数处理
     if (typeof path === 'string') path = [path]
-
+    // 如果是开发环境那么断言检测一下，以保证程序稳定
     if (process.env.NODE_ENV !== 'production') {
       assert(Array.isArray(path), `module path must be a string or an Array.`)
       assert(path.length > 0, 'cannot register the root module by using registerModule.')
     }
-
+    // 注册模块
     this._modules.register(path, rawModule)
+    // 把模块安装到 state 上面
     installModule(this, this.state, path, this._modules.get(path), options.preserveState)
     // reset store to update getters...
+    // 重置虚拟 store
     resetStoreVM(this, this.state)
   }
-
+  // 取消模块注册
   unregisterModule (path) {
+    // 处理一下参数
     if (typeof path === 'string') path = [path]
-
+    // 如果是开发环境那么断言检测一下，以保证程序稳定
     if (process.env.NODE_ENV !== 'production') {
       assert(Array.isArray(path), `module path must be a string or an Array.`)
     }
-
+    // 取消模块注册
     this._modules.unregister(path)
+    // 拿到模块，并将其从其父模块上删除
     this._withCommit(() => {
       const parentState = getNestedState(this.state, path.slice(0, -1))
       Vue.delete(parentState, path[path.length - 1])
     })
+    // 重置模块，也就是重新安装
     resetStore(this)
   }
-
+  // 热更新
   hotUpdate (newOptions) {
+    // 升级模块，然后重新载入模块
     this._modules.update(newOptions)
     resetStore(this, true)
   }
-
+  // 在 commit 的时候执行，主要是修改 committing 状态，执行回调，修改内容，再将 committing 状态改回去
   _withCommit (fn) {
     const committing = this._committing
     this._committing = true
