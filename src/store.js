@@ -273,13 +273,21 @@ function resetStore (store, hot) {
   resetStoreVM(store, state, hot)
 }
 
+/**
+ * resetStoreVM
+ * @param  {[type]} store     store 表示当前 Store 实例
+ * @param  {[type]} state     module 表示当前安装的模块
+ * @param  {[type]} hot       hot 当动态改变 modules 或者热更新的时候为 true
+ */
 function resetStoreVM (store, state, hot) {
+  // 先备份旧有的 vm ,以便以后使用
   const oldVm = store._vm
 
   // bind store public getters
   store.getters = {}
   const wrappedGetters = store._wrappedGetters
   const computed = {}
+  // 通过Object.defineProperty为每一个getter方法设置get方法
   forEachValue(wrappedGetters, (fn, key) => {
     // use computed to leverage its lazy-caching mechanism
     computed[key] = () => fn(store)
@@ -292,8 +300,10 @@ function resetStoreVM (store, state, hot) {
   // use a Vue instance to store the state tree
   // suppress warnings just in case the user has added
   // some funky global mixins
+  // 先将 Vue.config.silent 存储在临时常量中，这样 new Vue 实例的时候不会报错
   const silent = Vue.config.silent
   Vue.config.silent = true
+  // 实例化一个新的 Vue 对象
   store._vm = new Vue({
     data: {
       $$state: state
