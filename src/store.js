@@ -310,13 +310,15 @@ function resetStoreVM (store, state, hot) {
     },
     computed
   })
+  // 改成原先的状态
   Vue.config.silent = silent
 
   // enable strict mode for new vm
+  // 如果使用的是严格模式，那么调用 enableStrictMode 来对 store 进行处理
   if (store.strict) {
     enableStrictMode(store)
   }
-
+  // 如果 oldVm 存在，那么先判断是否传入了 hot 如果传入了，就先将其 $$state 设为 null . 然后在调用 nextTick 来删除 oldVm 实例
   if (oldVm) {
     if (hot) {
       // dispatch changes in all subscribed watchers
@@ -328,17 +330,28 @@ function resetStoreVM (store, state, hot) {
     Vue.nextTick(() => oldVm.$destroy())
   }
 }
-
+/**
+ * installModule
+ * @param  {[type]} store     store 表示当前 Store 实例
+ * @param  {[type]} rootState rootState 表示根 state
+ * @param  {[type]} path      path 表示当前嵌套模块的路径数组
+ * @param  {[type]} module    module 表示当前安装的模块
+ * @param  {[type]} hot       hot 当动态改变 modules 或者热更新的时候为 true
+ */
 function installModule (store, rootState, path, module, hot) {
   const isRoot = !path.length
+  // 获取模块的命名
   const namespace = store._modules.getNamespace(path)
 
   // register in namespace map
+  // 把当前模块名加入的 store 的 moduleNamespaceMap 中
   if (module.namespaced) {
     store._modulesNamespaceMap[namespace] = module
   }
 
   // set state
+  // 如果当前不是子模块也不是热更新状态，那么就是新增子模块，这个时候要取到父模块
+  // 然后插入到父模块的子模块列表中
   if (!isRoot && !hot) {
     const parentState = getNestedState(rootState, path.slice(0, -1))
     const moduleName = path[path.length - 1]
@@ -346,7 +359,7 @@ function installModule (store, rootState, path, module, hot) {
       Vue.set(parentState, moduleName, module.state)
     })
   }
-
+  // 拿到当前的上下文环境
   const local = module.context = makeLocalContext(store, namespace, path)
 
   module.forEachMutation((mutation, key) => {
